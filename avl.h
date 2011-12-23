@@ -186,13 +186,11 @@ void _avl_dump_left(avl_node_t *node)
   if(node->left){
     _avl_dump_left(node->left);
   }
-  else{
-    printf("key:%d,lbalance:%d,rbalance:%d,data:%d\n",
-	   node->key,
-	   node->lbalance,
-	   node->rbalance,
-	   (int)node->data);
-  }
+  printf("key:%d,lbalance:%d,rbalance:%d,data:%d\n",
+	 node->key,
+	 node->lbalance,
+	 node->rbalance,
+	 (int)node->data);
  
 }
 
@@ -203,13 +201,11 @@ void _avl_dump_right(avl_node_t *node)
   if(node->right){
     _avl_dump_right(node->right);
   }
-  else{
-    printf("key:%d,lbalance:%d,rbalance:%d,data:%d\n",
-	   node->key,
-	   node->lbalance,
-	   node->rbalance,
-	   (int)node->data);
-  }
+  printf("key:%d,lbalance:%d,rbalance:%d,data:%d\n",
+	 node->key,
+	 node->lbalance,
+	 node->rbalance,
+	 (int)node->data);
  
 }
 
