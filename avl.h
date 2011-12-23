@@ -24,6 +24,13 @@ typedef struct avl_tree_s{
   int height;
 }avl_tree_t;
 
+static inline void
+_avl_node_exchange(avl_node_t **n1,avl_node_t **n2)
+{
+  avl_node_t *tmp = *n1;
+  *n1 = *n2;
+  *n2 = tmp;
+}
 
 static inline void 
 _avl_recal_balance(int left,avl_node_t *node,avl_node_t *old,avl_node_t *new)
@@ -43,7 +50,7 @@ _avl_recal_balance(int left,avl_node_t *node,avl_node_t *old,avl_node_t *new)
 }
 
 static inline void 
-avl_rotate_left(avl_tree_t *tree,avl_node_t *n1,avl_node_t *n2)
+_avl_rotate_left(avl_tree_t *tree,avl_node_t *n1,avl_node_t *n2)
 {
   n2->right = n1->left;
   if(n1->left) { n1->left->p = n2; }
@@ -64,9 +71,8 @@ avl_rotate_left(avl_tree_t *tree,avl_node_t *n1,avl_node_t *n2)
   n2->p = n1;
 }
 
-
 static inline void 
-avl_rotate_right(avl_tree_t *tree,avl_node_t *n1,avl_node_t *n2)
+_avl_rotate_right(avl_tree_t *tree,avl_node_t *n1,avl_node_t *n2)
 {
   n2->left = n1->right;
   if(n1->right) { n1->right->p = n2; }
@@ -142,18 +148,24 @@ int avl_insert(avl_tree_t *tree,avl_node_t *node)
     if(balance >= 2 || balance <= -2){ /*rotate*/
 
       if(pn->left == n && n->left == node){
-	avl_rotate_right(tree,n,pn);
+	_avl_rotate_right(tree,n,pn);
+	_avl_node_exchange(&pn,&n);
       }
       else if(pn->left ==n && n->right == node){
-	avl_rotate_left(tree,node,n);
-	avl_rotate_right(tree,node,pn);
+	_avl_rotate_left(tree,node,n);
+	_avl_node_exchange(&node,&n);
+	_avl_rotate_right(tree,n,pn);
+	_avl_node_exchange(&pn,&n);
       }
       else if(pn->right == n && n->right == node){
-	avl_rotate_left(tree,n,pn);
+	_avl_rotate_left(tree,n,pn);
+	_avl_node_exchange(&pn,&n);
       }
       else if(pn->right == n && n->left == node){
-	avl_rotate_right(tree,node,n);
-	avl_rotate_left(tree,node,pn);
+	_avl_rotate_right(tree,node,n);
+	_avl_node_exchange(&node,&n);
+	_avl_rotate_left(tree,node,pn);
+	_avl_node_exchange(&pn,&n);
       }
     }
 
@@ -175,7 +187,7 @@ void _avl_dump_left(avl_node_t *node)
     _avl_dump_left(node->left);
   }
   else{
-    printf("key:%d,lbalance:%d,rbalance:%d,data:%d",
+    printf("key:%d,lbalance:%d,rbalance:%d,data:%d\n",
 	   node->key,
 	   node->lbalance,
 	   node->rbalance,
@@ -192,7 +204,7 @@ void _avl_dump_right(avl_node_t *node)
     _avl_dump_right(node->right);
   }
   else{
-    printf("key:%d,lbalance:%d,rbalance:%d,data:%d",
+    printf("key:%d,lbalance:%d,rbalance:%d,data:%d\n",
 	   node->key,
 	   node->lbalance,
 	   node->rbalance,
@@ -213,7 +225,7 @@ void avl_dump(avl_tree_t *tree)
 
   node = tree->root;
   _avl_dump_left(node->left);
-  printf("key:%d,lbalance:%d,rbalance:%d,data:%d",
+  printf("key:%d,lbalance:%d,rbalance:%d,data:%d\n",
 	 node->key,
 	 node->lbalance,
 	 node->rbalance,
