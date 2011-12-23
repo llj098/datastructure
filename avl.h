@@ -56,13 +56,13 @@ _avl_rotate_left(avl_tree_t *tree,avl_node_t *n1,avl_node_t *n2)
   if(n1->left) { n1->left->p = n2; }
   _avl_recal_balance(0,n2,n1,n1->left);
 
-  _avl_recal_balance(0,n1,n1->left,n2);
+  _avl_recal_balance(1,n1,n1->left,n2);
   n1->left = n2;
 
 
   if(n2->p){
+    _avl_recal_balance(0,n2->p,n2->p->right,n1);//FIXME:bug here
     n2->p->right = n1;
-    _avl_recal_balance(0,n2->p,n2->right,n1);
   }
   else{
     tree->root = n1;
@@ -78,12 +78,12 @@ _avl_rotate_right(avl_tree_t *tree,avl_node_t *n1,avl_node_t *n2)
   if(n1->right) { n1->right->p = n2; }
   _avl_recal_balance(1,n2,n1,n1->right);
 
-  _avl_recal_balance(1,n1,n1->right,n2);
+  _avl_recal_balance(0,n1,n1->right,n2);
   n1->right = n2;
 
   if(n2->p){
+    _avl_recal_balance(1,n2->p,n2->p->left,n1);
     n2->p->left = n1;
-    _avl_recal_balance(0,n2->p,n2->right,n1);
   }
   else{
     tree->root = n1;

@@ -12,7 +12,7 @@ main(int len,char **args)
 
   if(tree){
 
-    for(;i<100;i++){
+    for(;i<5;i++){
       avl_node_t *node = malloc(sizeof(*node));
       node->key = i;
       
