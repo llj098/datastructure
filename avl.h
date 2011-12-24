@@ -176,9 +176,10 @@ int avl_insert(avl_tree_t *tree,avl_node_t *node)
       else if(pn->right == n && n->left == node){
 	_avl_rotate_right(tree,node,n);
 	_avl_node_exchange(&node,&n);
-	_avl_rotate_left(tree,node,pn);
+	_avl_rotate_left(tree,n,pn);
 	pn = n->p;
       }
+      //else{ printf ("ERR"); printf ("ERR"); printf ("ERR"); printf ("ERR"); }
     }
     else{
       node = node->p;
