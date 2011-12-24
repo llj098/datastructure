@@ -151,9 +151,9 @@ int avl_insert(avl_tree_t *tree,avl_node_t *node)
 
   /*fix balance*/
   while(pn){
-    
-    if(pn->left == n) pn->lbalance++;
-    else if(pn->right == n) pn->rbalance++;
+
+    if(pn->left == n) pn->lbalance = MAX(n->lbalance,n->rbalance) + 1;
+    else if(pn->right == n) pn->rbalance = MAX(n->lbalance,n->rbalance) + 1;
 
     balance = pn->lbalance - pn->rbalance;
 
