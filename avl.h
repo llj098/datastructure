@@ -33,19 +33,19 @@ _avl_node_exchange(avl_node_t **n1,avl_node_t **n2)
 }
 
 static inline void 
-_avl_recal_balance(int left,avl_node_t *node,avl_node_t *old,avl_node_t *new)
+_avl_recal_balance(int left,avl_node_t *node,avl_node_t *new)
 {
   if(left){
-    if(old)
-      node->lbalance -= (1 + MAX(old->lbalance,old->rbalance));
     if(new)
-      node->lbalance += (1 + MAX(new->lbalance,new->rbalance));
+      node->lbalance = (1 + MAX(new->lbalance,new->rbalance));
+    else
+      node->lbalance = 0;
   }
   else{
-    if(old)
-      node->rbalance -= (1 + MAX(old->lbalance,old->rbalance));
     if(new)
-      node->rbalance += (1 + MAX(new->lbalance,new->rbalance));
+      node->rbalance = (1 + MAX(new->lbalance,new->rbalance));
+    else
+      node->rbalance = 0;
   }
 }
 
@@ -54,15 +54,21 @@ _avl_rotate_left(avl_tree_t *tree,avl_node_t *n1,avl_node_t *n2)
 {
   n2->right = n1->left;
   if(n1->left) { n1->left->p = n2; }
-  _avl_recal_balance(0,n2,n1,n1->left);
+  _avl_recal_balance(0,n2,n1->left);
 
-  _avl_recal_balance(1,n1,n1->left,n2);
   n1->left = n2;
+  _avl_recal_balance(1,n1,n2);
 
 
   if(n2->p){
-    _avl_recal_balance(0,n2->p,n2->p->right,n1);//FIXME:bug here
-    n2->p->right = n1;
+    if(n2->p->left == n2) {
+      _avl_recal_balance(1,n2->p,n1);
+      n2->p->left = n1;
+    }
+    else if(n2->p->right == n2) {
+      _avl_recal_balance(0,n2->p,n1);
+      n2->p->right = n1;
+    }
   }
   else{
     tree->root = n1;
@@ -76,14 +82,20 @@ _avl_rotate_right(avl_tree_t *tree,avl_node_t *n1,avl_node_t *n2)
 {
   n2->left = n1->right;
   if(n1->right) { n1->right->p = n2; }
-  _avl_recal_balance(1,n2,n1,n1->right);
+  _avl_recal_balance(1,n2,n1->right);
 
-  _avl_recal_balance(0,n1,n1->right,n2);
   n1->right = n2;
+  _avl_recal_balance(0,n1,n2);
 
   if(n2->p){
-    _avl_recal_balance(1,n2->p,n2->p->left,n1);
-    n2->p->left = n1;
+    if(n2->p->left == n2) {
+      _avl_recal_balance(1,n2->p,n1);
+      n2->p->left = n1;
+    }
+    else if(n2->p->right == n2) {
+      _avl_recal_balance(0,n2->p,n1);
+      n2->p->right = n1;
+    }
   }
   else{
     tree->root = n1;
@@ -149,64 +161,61 @@ int avl_insert(avl_tree_t *tree,avl_node_t *node)
 
       if(pn->left == n && n->left == node){
 	_avl_rotate_right(tree,n,pn);
-	_avl_node_exchange(&pn,&n);
+	pn = n->p;
       }
       else if(pn->left ==n && n->right == node){
 	_avl_rotate_left(tree,node,n);
 	_avl_node_exchange(&node,&n);
 	_avl_rotate_right(tree,n,pn);
-	_avl_node_exchange(&pn,&n);
+	pn = n->p;
       }
       else if(pn->right == n && n->right == node){
 	_avl_rotate_left(tree,n,pn);
-	_avl_node_exchange(&pn,&n);
+	pn = n->p;
       }
       else if(pn->right == n && n->left == node){
 	_avl_rotate_right(tree,node,n);
 	_avl_node_exchange(&node,&n);
 	_avl_rotate_left(tree,node,pn);
-	_avl_node_exchange(&pn,&n);
+	pn = n->p;
       }
     }
-
-    node = node->p;
-    n = pn;
-    pn = pn->p;
+    else{
+      node = node->p;
+      n = pn;
+      pn = pn->p;
+    }
   }
 
   return 1;
 }
 
 
-
-static inline 
-void _avl_dump_left(avl_node_t *node)
+static inline void
+_avl_print_node(avl_node_t *node)
 {
-  
-  if(node->left){
-    _avl_dump_left(node->left);
-  }
-  printf("key:%d,lbalance:%d,rbalance:%d,data:%d\n",
+  printf("key:%d,lb:%d,rb:%d,lkey:%d,rkey:%d,pkey:%d\n",
 	 node->key,
 	 node->lbalance,
 	 node->rbalance,
-	 (int)node->data);
- 
+	 node->left ? node->left->key : -1,
+	 node->right ? node->right->key : -1,
+	 node->p ? node->p->key : -1);
 }
 
 
 static inline 
-void _avl_dump_right(avl_node_t *node)
+void _avl_dump_node(avl_node_t *node)
 {
-  if(node->right){
-    _avl_dump_right(node->right);
+  if(node->left){
+    _avl_dump_node(node->left);
   }
-  printf("key:%d,lbalance:%d,rbalance:%d,data:%d\n",
-	 node->key,
-	 node->lbalance,
-	 node->rbalance,
-	 (int)node->data);
- 
+  
+  _avl_print_node(node);
+
+  if(node->right){
+    _avl_dump_node(node->right);
+  }
 }
 
 
@@ -220,11 +229,7 @@ void avl_dump(avl_tree_t *tree)
   }
 
   node = tree->root;
-  _avl_dump_left(node->left);
-  printf("key:%d,lbalance:%d,rbalance:%d,data:%d\n",
-	 node->key,
-	 node->lbalance,
-	 node->rbalance,
-	 (int)node->data);
-  _avl_dump_right(node->right);
+  _avl_dump_node(node->left);
+  _avl_print_node(node);
+  _avl_dump_node(node->right);
 }
